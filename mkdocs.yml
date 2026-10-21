@@ -1,0 +1,39 @@
+site_name: Amber Lin · 算法笔记
+site_description: 激光雷达建图、点云配准与状态估计算法笔记
+site_author: amberlin61
+site_url: https://amberlin61.github.io/
+repo_url: https://github.com/amberlin61/amberlin61.github.io
+repo_name: amberlin61/amberlin61.github.io
+edit_uri: edit/main/docs/
+
+theme:
+  name: readthedocs
+  locale: zh_CN
+  highlightjs: true
+  hljs_languages:
+    - cpp
+    - python
+    - yaml
+
+nav:
+  - 首页: index.md
+  - 建图方法:
+      - 方法总览: mapping/index.md
+      - 编码器逐点补偿建图: mapping/dual-encoder.md
+      - FAST-LIO2风格卡尔曼建图: mapping/kalman-fast-lio.md
+      - 编码器约束站点全局优化: mapping/encoder-global-opt.md
+  - 来源与版本: provenance.md
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - fenced_code
+  - tables
+  - toc:
+      permalink: true
+
+extra_css:
+  - stylesheets/extra.css
+
+strict: true
+
