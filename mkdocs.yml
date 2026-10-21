@@ -22,6 +22,9 @@ nav:
       - 编码器逐点补偿建图: mapping/dual-encoder.md
       - FAST-LIO2风格卡尔曼建图: mapping/kalman-fast-lio.md
       - 编码器约束站点全局优化: mapping/encoder-global-opt.md
+  - 标定算法: calibration/index.md
+  - 点云处理: point-cloud/index.md
+  - 感知算法: perception/index.md
   - 来源与版本: provenance.md
 
 markdown_extensions:
