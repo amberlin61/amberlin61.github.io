@@ -1,70 +1,82 @@
-# Amber Lin · 算法笔记
+---
+hide:
+  - toc
+---
 
-这里记录激光雷达建图、点云配准和状态估计方法。当前第一阶段整理三种代表性建图路线，并严格区分：
+<div class="hero">
+  <h1>三维感知与建图算法笔记</h1>
+  <p>围绕激光雷达、编码器与惯性传感器，整理建图、标定、点云处理和目标感知中的数学模型、数据流、评价指标与退化条件。</p>
+</div>
 
-- **来源与固定基线**：算法从哪里来，对应哪个版本；
-- **核心原理**：状态、观测、优化目标和数据流；
-- **当前实现变化**：在基线上增加、删除或重写了什么；
-- **能力边界**：算法能够估计什么，不能解决什么。
+<figure markdown="span">
+  ![三维算法知识结构](assets/diagrams/algorithm-landscape.svg)
+  <figcaption>坐标、时间和不确定性是建图、标定、点云处理与感知之间的公共语言。</figcaption>
+</figure>
 
-不确定的来源不会根据算法相似性推断，内部原型也不会冒充公开论文或开源项目。
+## 主题
 
-<div class="method-grid">
-  <div class="method-card">
-    <span class="status">固定轴运动模型</span>
-    <h3>编码器逐点补偿</h3>
-    <p>用逐点时间查询编码器角度，按标定转轴把每个点变换到统一坐标系。</p>
-    <p><a href="mapping/dual-encoder/">阅读原理与版本</a></p>
+<div class="topic-grid">
+  <div class="topic-card">
+    <span class="status">MAPPING</span>
+    <h3>建图</h3>
+    <p>研究运动补偿、状态估计、点云配准和全局一致性。内容覆盖固定轴运动、LiDAR–IMU 里程计与站点位姿图。</p>
+    <a href="mapping/">进入建图方法</a>
   </div>
-  <div class="method-card">
-    <span class="status">LiDAR–IMU状态估计</span>
-    <h3>FAST-LIO2风格卡尔曼建图</h3>
-    <p>IMU传播运动状态，以点到局部平面残差迭代更新状态并维护增量地图。</p>
-    <p><a href="mapping/kalman-fast-lio/">阅读原理与版本</a></p>
+
+  <div class="topic-card">
+    <span class="status">CALIBRATION</span>
+    <h3>标定</h3>
+    <p>研究空间外参、时间映射、旋转轴、零位与尺度参数的可观测性、求解方法和残差验证。</p>
+    <a href="calibration/">进入标定</a>
   </div>
-  <div class="method-card">
-    <span class="status">停站批量优化</span>
-    <h3>编码器约束站点全局优化</h3>
-    <p>停在离散角度采集站点子图，用ICP测量边、共享转轴模型和位姿图共同优化。</p>
-    <p><a href="mapping/encoder-global-opt/">阅读原理与版本</a></p>
+
+  <div class="topic-card">
+    <span class="status">POINT CLOUD</span>
+    <h3>点云处理</h3>
+    <p>研究过滤、采样、法向估计、配准、分割、表面拟合和几何质量评价。</p>
+    <a href="point-cloud/">进入点云处理</a>
+  </div>
+
+  <div class="topic-card">
+    <span class="status">PERCEPTION</span>
+    <h3>感知</h3>
+    <p>研究候选生成、三维聚类、中心估计、数据关联和多帧状态滤波。</p>
+    <a href="perception/">进入感知</a>
   </div>
 </div>
 
-## 其他栏目
+## 建图方法
 
-### 标定算法
+<div class="method-grid">
+  <div class="method-card">
+    <span class="status">KNOWN MOTION</span>
+    <h3>编码器逐点补偿</h3>
+    <p>编码器给出固定轴角度，逐点时间决定每个激光点的机械姿态。适用于运动自由度已知且机械模型可信的旋转扫描。</p>
+    <a href="mapping/dual-encoder/">阅读算法</a>
+  </div>
 
-整理传感器内外参、时间同步、旋转轴与几何约束标定方法。
+  <div class="method-card">
+    <span class="status">LIDAR–IMU</span>
+    <h3>FAST-LIO2</h3>
+    <p>IMU 传播连续状态，激光点对局部地图平面的残差迭代修正姿态、位置、速度与零偏。</p>
+    <a href="mapping/kalman-fast-lio/">阅读算法</a>
+  </div>
 
-[进入标定算法 →](calibration/index.md)
+  <div class="method-card">
+    <span class="status">BATCH OPTIMIZATION</span>
+    <h3>编码器约束站点优化</h3>
+    <p>离散停站子图形成相对位姿边，共享转轴模型与鲁棒 SE(3) 位姿图联合约束整圈地图。</p>
+    <a href="mapping/encoder-global-opt/">阅读算法</a>
+  </div>
+</div>
 
-### 点云处理
+## 统一分析框架
 
-整理滤波、降采样、配准、分割、特征与几何测量方法。
+算法说明按同一组问题展开：
 
-[进入点云处理 →](point-cloud/index.md)
-
-### 感知算法
-
-整理检测、聚类、跟踪与定位输出的算法原理和评价方法。
-
-[进入感知算法 →](perception/index.md)
-
-## 三种方法的核心区别
-
-| 方法 | 主要先验 | 是否从点云估计运动 | 优化范围 | 典型输出时机 |
-| --- | --- | --- | --- | --- |
-| 编码器逐点补偿 | 编码器角度、固定转轴、安装外参 | 否 | 每个点独立变换 | 可流式累计 |
-| FAST-LIO2风格卡尔曼 | IMU运动模型、局部地图平面 | 是 | 连续状态与局部地图 | 每帧增量更新 |
-| 编码器约束站点全局优化 | 编码器初值、站间点云重合 | 是 | 一圈全部站点位姿与共享转轴 | 封帧后统一输出 |
-
-这三种方法不是简单的“低、中、高版本”。它们依赖的传感器、运动假设和求解问题不同。
-
-## 版本原则
-
-1. 公开算法给出仓库、分支和固定提交；
-2. 内部实现只记录可核对的提交，不提供无法访问的伪链接；
-3. 基线算法与当前改动分段书写；
-4. 工程适配和估计算法改进分别说明；
-5. 所有测试结论注明评价范围，不把局部指标写成全局精度。
+1. **状态与参数**：求解对象是什么，哪些量固定，哪些量需要估计；
+2. **观测与残差**：传感器提供什么信息，误差如何进入目标函数；
+3. **可观测性**：什么场景和运动能约束参数，什么条件会退化；
+4. **计算结构**：逐点计算、递推滤波或批量优化；
+5. **质量评价**：残差、覆盖、厚度、重复性、漂移与计算代价。
 

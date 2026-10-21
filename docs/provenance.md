@@ -1,42 +1,39 @@
-# 来源与版本记录
+# 参考与版本
 
-## 整理原则
+<p class="lead">算法名称相似并不代表代码派生关系相同。版本记录用于区分公开论文、公开实现、内部数值原型和独立实现。</p>
 
-每种算法先固定来源，再描述当前实现。来源分为三类：
+## 建图方法来源
 
-1. **公开基线**：提供公开仓库和固定提交；
-2. **内部基线**：只记录可核对的提交，不提供无法访问的公开链接；
-3. **未找到来源**：明确说明没有证据，不根据相似结构猜测。
-
-## 当前三种方法
-
-| 方法 | 来源性质 | 固定基线 | 当前实现的主要变化 |
+| 方法 | 来源 | 固定版本 | 技术范围 |
 | --- | --- | --- | --- |
-| 编码器逐点补偿 | 内部固定旋转建图语义；未发现外部开源基线 | `R1_Multiple-encoders_SLAM@1.2.0`，首次接入 `efe065f...` | 任意倾斜轴、三维偏心、多源、可选IMU区间约束、严格时间覆盖、时间与角度预处理增强 |
-| FAST-LIO2风格卡尔曼 | 公开FAST-LIO2/IKFoM/ikd-Tree，经内部中间分支迁移 | FAST_LIO `a4743b...`；ikd-Tree `e2e3f4...`；内部 `77e958...` | 无ROS计算核、独立传感器实例、初始化与质量门禁、统一体素输出 |
-| 编码器约束站点全局优化 | 内部Python原型，无根许可证；按算法契约独立重写 | Python原型 `4c6acf...`；C++接入 `dbf4c15...` | 真实停站、站内微帧融合、双向ICP、完整测量环、共享轴拟合、soft-l1位姿图和严格终态 |
+| 编码器逐点补偿 | 固定轴旋转建图实现；未发现直接对应的公开 SLAM 基线 | `R1_Multiple-encoders_SLAM@1.2.0`；接入提交 `efe065f9...` | 逐点时间、编码器插值、任意轴刚体变换、体素融合 |
+| FAST-LIO2 | hku-mars/FAST_LIO、IKFoM、ikd-Tree | FAST_LIO `a4743b09...`；ikd-Tree `e2e3f4e9...` | IMU 传播、扫描去畸变、直接点到平面更新、增量地图 |
+| 编码器约束站点优化 | Python 数值原型，随后按数学模型实现 C++ 求解器 | 原型 `4c6acf05...`；C++ 接入 `dbf4c15...` | 停站子图、双向 ICP、共享轴模型、鲁棒 SE(3) 位姿图 |
 
-## 公开引用
-
-### FAST-LIO2
+## FAST-LIO2
 
 - 论文：[FAST-LIO2: Fast Direct LiDAR-inertial Odometry](https://arxiv.org/abs/2107.06829)
 - 代码：[hku-mars/FAST_LIO](https://github.com/hku-mars/FAST_LIO)
-- 本次记录的固定提交：[`a4743b095409588842a5b30ddfa27e29d2f99164`](https://github.com/hku-mars/FAST_LIO/tree/a4743b095409588842a5b30ddfa27e29d2f99164)
+- 固定代码版本：[`a4743b095409588842a5b30ddfa27e29d2f99164`](https://github.com/hku-mars/FAST_LIO/tree/a4743b095409588842a5b30ddfa27e29d2f99164)
 
-### ikd-Tree
+FAST-LIO2 使用原始激光点构造点到局部地图平面的残差，以迭代误差状态卡尔曼滤波联合惯性传播和激光观测。
+
+## ikd-Tree
 
 - 代码：[hku-mars/ikd-Tree](https://github.com/hku-mars/ikd-Tree)
-- 本次记录的固定提交：[`e2e3f4e9d3b95a9e66b1ba83dc98d4a05ed8a3c4`](https://github.com/hku-mars/ikd-Tree/tree/e2e3f4e9d3b95a9e66b1ba83dc98d4a05ed8a3c4)
+- 固定代码版本：[`e2e3f4e9d3b95a9e66b1ba83dc98d4a05ed8a3c4`](https://github.com/hku-mars/ikd-Tree/tree/e2e3f4e9d3b95a9e66b1ba83dc98d4a05ed8a3c4)
 
-### IKFoM
+ikd-Tree 支持动态插入、删除、局部范围裁剪、近邻搜索和增量重平衡，用于维护 FAST-LIO2 的局部地图。
+
+## IKFoM
 
 - 论文：[Kalman Filters on Differentiable Manifolds](https://arxiv.org/abs/2102.03804)
 - 代码：[hku-mars/IKFoM](https://github.com/hku-mars/IKFoM)
 
-## 发布边界
+IKFoM 用流形上的加、减运算描述旋转等非欧氏状态，使误差状态滤波可以在局部切空间线性化。
 
-- FAST-LIO派生源码使用GPL-2.0许可；公开派生代码前应单独核对完整许可义务。
-- 内部Python站点全局优化原型没有根许可证，本网站只整理原理和版本关系，不发布或改写其源代码。
-- 编码器逐点补偿尚未找到可靠外部来源，因此只标记为内部实现，不附会到CT-ICP、LOAM或FAST-LIO。
+## 许可说明
 
+FAST_LIO 仓库采用 GPL-2.0 许可，ikd-Tree 与 IKFoM 中的文件保留各自许可声明。代码复用时需要按具体文件、固定版本和链接方式核对许可证义务。
+
+内部数值原型没有可公开确认的根许可证，因此只记录算法结构和版本标识，不发布其源代码。
